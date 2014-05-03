@@ -119,7 +119,8 @@ public class BillingManager {
 
 			int dayOfMonth = cal2.get(Calendar.DAY_OF_MONTH);
 			if (dayOfMonth >= 28) {
-				dayOfMonth = 28; // protect against End of month
+				// protect against End of month
+				dayOfMonth = lastDayOfMonth(cal2);
 			}
 			if (cal.get(Calendar.DAY_OF_MONTH) < dayOfMonth) {
 				cal.set(Calendar.YEAR, dayOfMonth);
@@ -130,6 +131,14 @@ public class BillingManager {
 			paymentDate = cal.getTime();
 		}
 		return paymentDate;
+	}
+
+	public int lastDayOfMonth(final Calendar cal2) {
+		// note: could use cal.getActualMaximum(Calendar.DAY_OF_MONTH) - 1
+		cal2.add(Calendar.MONTH, 1);
+		cal2.set(Calendar.DATE, 1);
+		cal2.add(Calendar.DATE, -2);
+		return cal2.get(Calendar.DATE);
 	}
 
 	private Double pricingPlan(String plan) {
