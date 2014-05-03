@@ -45,6 +45,23 @@ public class BillingManager {
 		}
 
 		addMultiCallsOption(options, fees);
+
+		fees = addCreditCardCommission(fees);
+		return fees;
+	}
+
+	private Map<Date, Double> addCreditCardCommission(Map<Date, Double> fees) {
+		if (fees.size() >= 1) {
+			for (Date date : fees.keySet()) {
+				Double amount = fees.get(date);
+				final Properties prop = loadProperties();
+				double creditCardCommission = Double.parseDouble(prop
+						.getProperty("creditcardcommission"));
+				fees.put(date, amount + creditCardCommission);
+			}
+		} else {
+			return fees;
+		}
 		return fees;
 	}
 
