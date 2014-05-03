@@ -33,9 +33,65 @@ public class BillingManager {
 
 	// boolean insurance
 
-	// compute when and how to bill the customer in the next 30 days
-	public Map<Date, Double> fees(Date registrationDate, String plan,
+	public Map<Date, Double> toBill(Date registrationDate, String plan,
 			int textCount, String options, String payAsYouGoLevel, int callTime) {
+		Map<Date, Double> fees = null;
+		fees = monthlyFee(registrationDate, plan, textCount, options, callTime);
+
+		addMultiCallsOption(options, fees);
+		return fees;
+	}
+
+	/**
+	 * if option MULTICALLS is selected, get the amount and add it to the next
+	 * payment
+	 */
+	public void addMultiCallsOption(String options, Map<Date, Double> fees) {
+		double optionalFee = 0;
+		String[] optionArray = options.split(";");
+		for (int i = 0; i < optionArray.length; i++) {
+			if (MULTI_CALLS.equalsIgnoreCase(optionArray[i])) {
+				final Properties prop = loadProperties();
+				optionalFee = Double.parseDouble(prop
+						.getProperty("multicalls.fee"));
+			}
+		}
+		Date date = null;
+		if (fees.size() == 1) {
+			date = fees.keySet().iterator().next();
+			Double amount = fees.get(date);
+			fees.put(date, amount + optionalFee);
+		} else {
+			// should never happen
+			final Calendar cal = new GregorianCalendar();
+			cal.set(Calendar.HOUR_OF_DAY, 0);
+			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			cal.get(Calendar.MONTH);
+
+			fees.put(date, optionalFee);
+		}
+	}
+
+	public Map<Date, Double> monthlyFee(Date registrationDate, String plan,
+			int textCount, String options, int callTime) {
+		Date paymentDate = getPaymentDate(registrationDate);
+
+		Double monthlyFee = pricingPlan(plan);
+		if (monthlyFee == null) {
+			monthlyFee = 0.;
+		}
+
+		Double overtimeAmount = overtimeAmount(plan, callTime);
+
+		final Map<Date, Double> map = new HashMap<Date, Double>();
+		double total = Math.round((monthlyFee + overtimeAmount) * 100.) / 100.;
+		map.put(paymentDate, total);
+		return map;
+	}
+
+	public Date getPaymentDate(Date registrationDate) {
 		Date today = new Date();
 
 		final Calendar cal = new GregorianCalendar();
@@ -73,17 +129,61 @@ public class BillingManager {
 			}
 			paymentDate = cal.getTime();
 		}
-
-		Double amount = pricingPlan(plan);
-		if (amount == null) {
-			amount = 0.;
-		}
-		final Map<Date, Double> map = new HashMap<Date, Double>();
-		map.put(paymentDate, amount);
-		return map;
+		return paymentDate;
 	}
 
 	private Double pricingPlan(String plan) {
+		final Properties prop = loadProperties();
+
+		if (plan != null) {
+			if (PLAN_BASIC.equals(plan)) {
+				return Double.parseDouble(prop.getProperty("plan.basic.fee"));
+			}
+			if (PLAN_PREMIER.equals(plan)) {
+				Double.parseDouble(prop.getProperty("plan.premier.fee"));
+			}
+			if (PLAN_VIP.equals(plan)) {
+				Double.parseDouble(prop.getProperty("plan.vip.fee"));
+			}
+		}
+		return null;
+	}
+
+	private Double overtimeAmount(String plan, int callTime) {
+		final Properties prop = loadProperties();
+		if (callTime == 0) {
+			return 0.;
+		}
+
+		final double overtimeRate = Double.parseDouble(prop
+				.getProperty("overtime.rate"));
+		if (plan != null) {
+			if (PLAN_BASIC.equals(plan)) {
+				return overtimeAmount("plan.basic.time", callTime, prop,
+						overtimeRate);
+			}
+			if (PLAN_PREMIER.equals(plan)) {
+				return overtimeAmount("plan.premier.time", callTime, prop,
+						overtimeRate);
+			}
+			if (PLAN_VIP.equals(plan)) {
+				return overtimeAmount("plan.vip.time", callTime, prop,
+						overtimeRate);
+			}
+		}
+		return null;
+	}
+
+	public Double overtimeAmount(String planName, int callTime,
+			final Properties prop, final double overtimeRate) {
+		int overtime = callTime - Integer.parseInt(prop.getProperty(planName));
+		if (overtime < 0) {
+			return 0.;
+		}
+		return overtimeRate * overtime;
+	}
+
+	public Properties loadProperties() {
 		final Properties prop = new Properties();
 		InputStream input = null;
 		try {
@@ -100,18 +200,7 @@ public class BillingManager {
 				}
 			}
 		}
-
-		if (plan != null) {
-			if (PLAN_BASIC.equals(plan)) {
-				return Double.parseDouble(prop.getProperty("plan.basic.fee"));
-			}
-			if (PLAN_PREMIER.equals(plan)) {
-				Double.parseDouble(prop.getProperty("plan.premier.fee"));
-			}
-			if (PLAN_VIP.equals(plan)) {
-				Double.parseDouble(prop.getProperty("plan.vip.fee"));
-			}
-		}
-		return null;
+		return prop;
 	}
+
 }

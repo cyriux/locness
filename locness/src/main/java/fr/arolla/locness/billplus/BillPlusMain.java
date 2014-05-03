@@ -18,13 +18,14 @@ public class BillPlusMain {
 
 	public static void billingService(PricePlans contracts) {
 		BillingManager manager = new BillingManager();
-		for (Iterator iterator = contracts.allUserIds().iterator(); iterator
+		for (Iterator<Long> iterator = contracts.allUserIds().iterator(); iterator
 				.hasNext();) {
 			Long userId = (Long) iterator.next();
 			UserContract userContract = contracts.findByUserid(userId);
-			Map<Date, Double> fees = manager.fees(
+			Map<Date, Double> fees = manager.toBill(
 					userContract.getRegistrationDate(), userContract.getPlan(),
-					0, userContract.getOptions(), "", 125);
+					26, userContract.getOptions(),
+					userContract.getPayAsYouGoLevel(), 70);
 			System.out.println(fees);
 		}
 	}
