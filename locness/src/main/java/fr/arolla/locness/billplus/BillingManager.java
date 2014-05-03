@@ -15,6 +15,7 @@ public class BillingManager {
 	// Pricing Plans
 	public final static String PLAN_BASIC = "BASI";
 	public final static String PLAN_PREMIER = "PREMI";
+	public final static String PLAN_HOULAHOUP = "HOUH";
 	public final static String PLAN_VIP = "VIP";
 	// Pay as you go : null
 
@@ -47,6 +48,7 @@ public class BillingManager {
 		addMultiCallsOption(options, fees);
 
 		fees = addCreditCardCommission(fees);
+
 		return fees;
 	}
 
@@ -79,7 +81,7 @@ public class BillingManager {
 			rate = Double.parseDouble(prop
 					.getProperty("paysasyougo.level2.rate"));
 		}
-		amount = callTime * rate;
+		amount = callTime * rate + textCount * 0.10;
 		Date paymentDate = getPaymentDate(registrationDate);
 
 		final Map<Date, Double> map = new HashMap<Date, Double>();
@@ -143,7 +145,8 @@ public class BillingManager {
 			monthlyFee = 0.;
 		}
 
-		Double overtimeAmount = overtimeAmount(plan, callTime);
+		Double overtimeAmount = overtimeAmount(plan, callTime) + textCount
+				* 0.10;
 
 		final Map<Date, Double> map = new HashMap<Date, Double>();
 		double total = Math.round((monthlyFee + overtimeAmount) * 100.) / 100.;
@@ -210,6 +213,9 @@ public class BillingManager {
 			}
 			if (PLAN_PREMIER.equals(plan)) {
 				Double.parseDouble(prop.getProperty("plan.premier.fee"));
+			}
+			if (PLAN_HOULAHOUP.equals(plan)) {
+				Double.parseDouble(prop.getProperty("plan.houlahoup.fee"));
 			}
 			if (PLAN_VIP.equals(plan)) {
 				Double.parseDouble(prop.getProperty("plan.vip.fee"));
