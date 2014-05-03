@@ -36,20 +36,52 @@ public class BillingManager {
 	public Map<Date, Double> toBill(Date registrationDate, String plan,
 			int textCount, String options, String payAsYouGoLevel, int callTime) {
 		Map<Date, Double> fees = null;
-		fees = monthlyFee(registrationDate, plan, textCount, options, callTime);
+		if (payAsYouGoLevel != null) {
+			fees = payAsYouGo(registrationDate, payAsYouGoLevel, textCount,
+					options, callTime);
+		} else {
+			fees = monthlyFee(registrationDate, plan, textCount, options,
+					callTime);
+		}
 
 		addMultiCallsOption(options, fees);
 		return fees;
+	}
+
+	private Map<Date, Double> payAsYouGo(Date registrationDate,
+			String payAsYouGoLevel, int textCount, String options, int callTime) {
+		final Properties prop = loadProperties();
+
+		double amount = 0;
+		double rate = 0;
+		if (PAYG_LEVEL1.equals(payAsYouGoLevel)) {
+			rate = Double.parseDouble(prop
+					.getProperty("paysasyougo.level1.rate"));
+		}
+		if (PAYG_LEVEL2.equals(payAsYouGoLevel)) {
+			rate = Double.parseDouble(prop
+					.getProperty("paysasyougo.level2.rate"));
+		}
+		amount = callTime * rate;
+		Date paymentDate = getPaymentDate(registrationDate);
+
+		final Map<Date, Double> map = new HashMap<Date, Double>();
+		double total = Math.round((amount) * 100.) / 100.;
+		map.put(paymentDate, total);
+		return map;
 	}
 
 	/**
 	 * if option MULTICALLS is selected, get the amount and add it to the next
 	 * payment
 	 */
-	public void addMultiCallsOption(String options, Map<Date, Double> fees) {
+	private void addMultiCallsOption(String options, Map<Date, Double> fees) {
 		double optionalFee = 0;
+		if (options == null || options.length() == 0) {
+			return;
+		}
 		String[] optionArray = options.split(";");
-		
+
 		// multi-calls option
 		final Properties prop = loadProperties();
 		for (int i = 0; i < optionArray.length; i++) {
@@ -65,7 +97,7 @@ public class BillingManager {
 						.getProperty("report.fee"));
 			}
 		}
-		
+
 		// add the option fees to the regular fee payment
 		Date date = null;
 		if (fees.size() == 1) {

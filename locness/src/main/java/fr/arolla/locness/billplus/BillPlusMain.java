@@ -9,9 +9,14 @@ public class BillPlusMain {
 	public static void main(String[] args) {
 		PricePlans contracts = new PricePlans();
 		UserContract contract = new UserContract();
-		contract.setName("Jonh Doe");
+		contract.setName("John Doe");
 		contract.setPlan("BASI");
 		contracts.addUserContract(123L, contract);
+		
+		UserContract contract2 = new UserContract();
+		contract2.setName("Paul Smith");
+		contract2.setPayAsYouGoLevel("LEV2");
+		contracts.addUserContract(456L, contract2);
 
 		billingService(contracts);
 	}
