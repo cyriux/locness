@@ -145,8 +145,13 @@ public class BillingManager {
 			monthlyFee = 0.;
 		}
 
-		Double overtimeAmount = overtimeAmount(plan, callTime) + textCount
-				* 0.10;
+		Double overtimeAmount = null;
+		if (PLAN_HOULAHOUP.equals(plan)) {
+			overtimeAmount = overtimeAmount(plan, callTime)
+					+ (textCount / 2 * 0.10);
+		} else {
+			overtimeAmount = overtimeAmount(plan, callTime) + textCount * 0.10;
+		}
 
 		final Map<Date, Double> map = new HashMap<Date, Double>();
 		double total = Math.round((monthlyFee + overtimeAmount) * 100.) / 100.;
