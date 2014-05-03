@@ -49,13 +49,24 @@ public class BillingManager {
 	public void addMultiCallsOption(String options, Map<Date, Double> fees) {
 		double optionalFee = 0;
 		String[] optionArray = options.split(";");
+		
+		// multi-calls option
+		final Properties prop = loadProperties();
 		for (int i = 0; i < optionArray.length; i++) {
 			if (MULTI_CALLS.equalsIgnoreCase(optionArray[i])) {
-				final Properties prop = loadProperties();
 				optionalFee = Double.parseDouble(prop
 						.getProperty("multicalls.fee"));
 			}
 		}
+		// report option
+		for (int i = 0; i < optionArray.length; i++) {
+			if (REPORT.equalsIgnoreCase(optionArray[i])) {
+				optionalFee += Double.parseDouble(prop
+						.getProperty("report.fee"));
+			}
+		}
+		
+		// add the option fees to the regular fee payment
 		Date date = null;
 		if (fees.size() == 1) {
 			date = fees.keySet().iterator().next();
