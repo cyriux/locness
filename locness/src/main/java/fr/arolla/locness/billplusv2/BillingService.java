@@ -1,6 +1,7 @@
 package fr.arolla.locness.billplusv2;
 
 import static fr.arolla.locness.billplusv2.PaymentScheduling.ANNIVERSARY_DATE_EOM;
+import static fr.arolla.locness.billplusv2.PaymentScheduling.ANNIVERSARY_DATE_EOM_UK;
 import static fr.arolla.locness.billplusv2.PaymentScheduling.MONTH_5;
 
 import java.util.Currency;
@@ -11,13 +12,13 @@ public class BillingService {
 
 	private final Config config;
 
-	public BillingService() {
-		config = new Config("billingconfig2");
+	public BillingService(String configName) {
+		config = new Config("billingconfig" + configName);
 	}
 
 	public PaymentSequence toBill(Contract contract, Date billingDate, UserConsumption usage) {
 		final Date registrationDate = contract.getRegistrationDate();
-		final PaymentScheduling scheduling = registrationDate == null ? MONTH_5 : ANNIVERSARY_DATE_EOM;
+		final PaymentScheduling scheduling = registrationDate == null ? MONTH_5 : scheduling();
 		final Date paymentDate = scheduling.paymentDate(registrationDate, billingDate);
 
 		// for each payment
@@ -25,6 +26,11 @@ public class BillingService {
 				+ billTexts(contract, billingDate, usage) + billOptions(contract, billingDate, usage);
 
 		return new PaymentSequence(newPayment(paymentDate, amount, contract));
+	}
+
+	protected PaymentScheduling scheduling() {
+		String schedulingString = config.getString("scheduling");
+		return schedulingString ==null? ANNIVERSARY_DATE_EOM : ANNIVERSARY_DATE_EOM_UK;
 	}
 
 	protected Payment newPayment(final Date paymentDate, final double amount, Contract contract) {

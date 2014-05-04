@@ -39,13 +39,16 @@ public class BillingManager {
 	public final static String MULTI_CALLS = "MULT";
 	public final static String REPORT = "REPO";
 	public final static String SINGLE_PAYMENT = "SING";
+	private String country;
 
 	// boolean insurance
 
 	public Map<Date, Double> toBill(Date registrationDate, String plan, int textCount, String options,
-			String payAsYouGoLevel, int callTime) {
+			String payAsYouGoLevel, int callTime, String country) {
 		System.out.println("Starting billing for plan: " + plan + " texts counts: " + textCount + " call time: "
 				+ callTime);
+		System.out.println("Country: " + country);
+		this.country = country;
 		Map<Date, Double> fees = new HashMap<Date, Double>();
 		try {
 			if (plan != null && plan.startsWith("FLX")) {
@@ -96,17 +99,27 @@ public class BillingManager {
 			rate = Double.parseDouble(prop.getProperty("flexi.large.rate"));
 			fee = Double.parseDouble(prop.getProperty("flexi.large.fee"));
 			builtInTime = 30;
+			if (country.equals("UK")) {
+				builtInTime = 25;
+			}
 		}
 		if (FLEXI_XL.equals(plan)) {
 			rate = Double.parseDouble(prop.getProperty("flexi.extra.rate"));
 			fee = Double.parseDouble(prop.getProperty("flexi.extra.fee"));
 			builtInTime = 45;
+			if (country.equals("UK")) {
+				builtInTime = 40;
+			}
 		}
 		int extraTime = callTime - builtInTime;
 		if (extraTime < 0) {
 			extraTime = 0;
 		}
-		amount = fee + extraTime * rate + textCount * 0.10;
+		if (country.equals("UK")) {
+			amount = fee + extraTime * rate + textCount * 0.15;
+		} else {
+			amount = fee + extraTime * rate + textCount * 0.10;
+		}
 		Date paymentDate = getPaymentDate(registrationDate);
 
 		final Map<Date, Double> map = new HashMap<Date, Double>();
@@ -153,7 +166,11 @@ public class BillingManager {
 			rate = Double.parseDouble(prop.getProperty("paysasyougo.level2.rate"));
 			fee = Double.parseDouble(prop.getProperty("paysasyougo.level2.fee"));
 		}
-		amount = fee + callTime * rate + textCount * 0.10;
+		if (country.equals("UK")) {
+			amount = fee + callTime * rate + textCount * 0.15;
+		} else {
+			amount = fee + callTime * rate + textCount * 0.10;
+		}
 		Date paymentDate = getPaymentDate(registrationDate);
 
 		final Map<Date, Double> map = new HashMap<Date, Double>();
@@ -219,8 +236,13 @@ public class BillingManager {
 		Double overtimeAmount = null;
 		if (PLAN_HOULAHOUP.equals(plan)) {
 			overtimeAmount = overtimeAmount(plan, callTime) + (textCount / 2 * 0.10);
+			// no houla houp for UK, never
 		} else {
-			overtimeAmount = overtimeAmount(plan, callTime) + textCount * 0.10;
+			if (country.equals("UK")) {
+				overtimeAmount = overtimeAmount(plan, callTime) + textCount * 0.15;
+			} else {
+				overtimeAmount = overtimeAmount(plan, callTime) + textCount * 0.10;
+			}
 		}
 
 		final Map<Date, Double> map = new HashMap<Date, Double>();
@@ -275,7 +297,11 @@ public class BillingManager {
 		// note: could use cal.getActualMaximum(Calendar.DAY_OF_MONTH) - 1
 		cal2.add(Calendar.MONTH, 1);
 		cal2.set(Calendar.DATE, 1);
-		cal2.add(Calendar.DATE, -2);
+		if (country.equals("UK")) {
+			cal2.add(Calendar.DATE, -3);
+		}else {			
+			cal2.add(Calendar.DATE, -2);
+		}
 		return cal2.get(Calendar.DATE);
 	}
 
@@ -354,7 +380,11 @@ public class BillingManager {
 		final Properties prop = new Properties();
 		InputStream input = null;
 		try {
-			input = new FileInputStream("billingconfig.properties");
+			if (country.equals("UK")) {
+				input = new FileInputStream("billingconfig.uk.properties");
+			} else {
+				input = new FileInputStream("billingconfig.properties");
+			}
 			prop.load(input);
 		} catch (IOException ex) {
 			ex.printStackTrace();

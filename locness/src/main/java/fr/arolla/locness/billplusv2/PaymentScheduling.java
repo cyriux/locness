@@ -17,17 +17,26 @@ public enum PaymentScheduling {
 		int dayOfMonth(Date startDate, Date now) {
 			int dayOfMonth = ANNIVERSARY_DATE.dayOfMonth(startDate, now);
 			final Calendar cal = toCalendar(now);
-			return dayOfMonth >= 28 ? lastDayOfMonth(cal) : dayOfMonth;
+			return dayOfMonth >= 28 ? lastDayOfMonth(cal, -2) : dayOfMonth;
 		}
 
-		private final int lastDayOfMonth(final Calendar cal2) {
-			// note: could use cal.getActualMaximum(Calendar.DAY_OF_MONTH) - 1
-			cal2.add(Calendar.MONTH, 1);
-			cal2.set(Calendar.DATE, 1);
-			cal2.add(Calendar.DATE, -2);
-			return cal2.get(Calendar.DATE);
+	},
+	ANNIVERSARY_DATE_EOM_UK() {
+		int dayOfMonth(Date startDate, Date now) {
+			int dayOfMonth = ANNIVERSARY_DATE.dayOfMonth(startDate, now);
+			final Calendar cal = toCalendar(now);
+			return dayOfMonth >= 28 ? lastDayOfMonth(cal, -3) : dayOfMonth;
 		}
+
 	};
+
+	private static final int lastDayOfMonth(final Calendar cal2, int shift) {
+		// note: could use cal.getActualMaximum(Calendar.DAY_OF_MONTH) - 1
+		cal2.add(Calendar.MONTH, 1);
+		cal2.set(Calendar.DATE, 1);
+		cal2.add(Calendar.DATE, shift);
+		return cal2.get(Calendar.DATE);
+	}
 
 	public Date paymentDate(Date startDate, Date now) {
 		final Calendar cal = toCalendar(now);
@@ -53,6 +62,5 @@ public enum PaymentScheduling {
 	int dayOfMonth(Date startDate, Date now) {
 		return 5;
 	}
-	
-	
+
 }

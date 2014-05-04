@@ -34,16 +34,16 @@ public class BillPlusMain {
 		contract5.setPlan("BIZ1");
 		contracts.addUserContract(1123L, contract5);
 
-		billingService(contracts);
+		billingService(contracts, "FR");
 	}
 
-	public static void billingService(PricePlans contracts) {
+	public static void billingService(PricePlans contracts, String country) {
 		BillingManager manager = new BillingManager();
 		for (Iterator<Long> iterator = contracts.allUserIds().iterator(); iterator.hasNext();) {
 			Long userId = (Long) iterator.next();
 			UserContract userContract = contracts.findByUserid(userId);
 			Map<Date, Double> fees = manager.toBill(userContract.getRegistrationDate(), userContract.getPlan(), 26,
-					userContract.getOptions(), userContract.getPayAsYouGoLevel(), 70);
+					userContract.getOptions(), userContract.getPayAsYouGoLevel(), 70, country);
 			System.out.println(fees);
 		}
 	}

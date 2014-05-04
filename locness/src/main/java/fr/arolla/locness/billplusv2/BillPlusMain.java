@@ -18,7 +18,7 @@ public class BillPlusMain {
 		contracts.addUserContract(1123L, new Contract("Britney", null, ContractCode.FLEXI_L, null));
 		contracts.addUserContract(1456L, new Contract("Lana", null, ContractCode.BIZ1, EnumSet.of(REPO)));
 
-		contracts.doBilling(new Date(), new BillingService(), new UserConsumption(26, 70));
+		contracts.doBilling(new Date(), new BillingService("2"), new UserConsumption(26, 70));
 	}
 
 }
