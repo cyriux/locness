@@ -5,6 +5,7 @@ import static fr.arolla.locness.billplusv2.PaymentScheduling.MONTH_5;
 
 import java.util.Currency;
 import java.util.Date;
+import java.util.Set;
 
 public class BillingService {
 
@@ -57,9 +58,12 @@ public class BillingService {
 
 	protected double billOptions(Contract contract, Date billingDate, UserConsumption usage) {
 		double optionsBill = 0;
+		final Set<OptionCode> builtInOptions = config.getOptionCodes(codeOf(contract));
 		for (OptionCode option : contract.getOptions()) {
-			final String optionCode = option.getName().toLowerCase();
-			optionsBill += config.getFee(optionCode, 0.0);
+			if (!builtInOptions.contains(option)) {
+				final String optionCode = option.getName().toLowerCase();
+				optionsBill += config.getFee(optionCode, 0.0);
+			}
 		}
 		return optionsBill;
 	}

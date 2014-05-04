@@ -28,6 +28,11 @@ public class BillPlusMain {
 		contract4.setName("Britney");
 		contract4.setPlan("FLXX");
 		contracts.addUserContract(1123L, contract4);
+		
+		UserContract contract5 = new UserContract();
+		contract5.setName("Lana");
+		contract5.setPlan("BIZ1");
+		contracts.addUserContract(1123L, contract5);
 
 		billingService(contracts);
 	}

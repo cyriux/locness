@@ -23,6 +23,10 @@ public class BillingManager {
 	public final static String FLEXI_L = "FLXL";
 	public final static String FLEXI_XL = "FLXX";
 
+	public final static String BIZ1 = "BIZ1";
+	public final static String BIZ2 = "BIZ2";
+	public final static String BIZ3 = "BIZ3";
+
 	// Pay as you go rates
 	public final static String PAYG_LEVEL1 = "LEV1";
 	public final static String PAYG_LEVEL2 = "LEV2";
@@ -56,7 +60,11 @@ public class BillingManager {
 		}
 
 		try {
-			addMultiCallsOption(options, fees);
+			if (plan != null && plan.startsWith("BIZ")) {
+				addMultiCallsOption(options, fees, true);
+			} else {
+				addMultiCallsOption(options, fees, false);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -158,7 +166,7 @@ public class BillingManager {
 	 * if option MULTICALLS is selected, get the amount and add it to the next
 	 * payment
 	 */
-	private void addMultiCallsOption(String options, Map<Date, Double> fees) {
+	private void addMultiCallsOption(String options, Map<Date, Double> fees, boolean biz) {
 		double optionalFee = 0;
 		if (options == null || options.length() == 0) {
 			return;
@@ -173,9 +181,11 @@ public class BillingManager {
 			}
 		}
 		// report option
-		for (int i = 0; i < optionArray.length; i++) {
-			if (REPORT.equalsIgnoreCase(optionArray[i])) {
-				optionalFee += Double.parseDouble(prop.getProperty("report.fee"));
+		if (!biz) {
+			for (int i = 0; i < optionArray.length; i++) {
+				if (REPORT.equalsIgnoreCase(optionArray[i])) {
+					optionalFee += Double.parseDouble(prop.getProperty("report.fee"));
+				}
 			}
 		}
 
@@ -285,6 +295,16 @@ public class BillingManager {
 			if (PLAN_VIP.equals(plan)) {
 				Double.parseDouble(prop.getProperty("plan.vip.fee"));
 			}
+			// BIZ
+			if (BIZ1.equals(plan)) {
+				return Double.parseDouble(prop.getProperty("plan.biz1.fee"));
+			}
+			if (BIZ2.equals(plan)) {
+				Double.parseDouble(prop.getProperty("plan.biz2.fee"));
+			}
+			if (BIZ3.equals(plan)) {
+				Double.parseDouble(prop.getProperty("plan.biz3.fee"));
+			}
 		}
 		return null;
 	}
@@ -306,6 +326,18 @@ public class BillingManager {
 			if (PLAN_VIP.equals(plan)) {
 				return overtimeAmount("plan.vip.time", callTime, prop, overtimeRate);
 			}
+
+			// BIZ
+			if (BIZ1.equals(plan)) {
+				return overtimeAmount("plan.biz1.time", callTime, prop, overtimeRate);
+			}
+			if (BIZ2.equals(plan)) {
+				return overtimeAmount("plan.biz2.time", callTime, prop, overtimeRate);
+			}
+			if (BIZ3.equals(plan)) {
+				return overtimeAmount("plan.biz3.time", callTime, prop, overtimeRate);
+			}
+
 		}
 		return null;
 	}

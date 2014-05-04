@@ -26,13 +26,4 @@ public class AllContracts {
 		return "All Contracts with " + contracts.size() + " user contracts";
 	}
 
-	private final static Set<OptionCode> parseOptions(String options) {
-		final Set<OptionCode> optionSet = EnumSet.noneOf(OptionCode.class);
-		final String[] optionArray = options == null ? new String[0] : options.split(";");
-		for (String token : optionArray) {
-			optionSet.add(OptionCode.valueOf(token));
-		}
-		return optionSet;
-	}
-
 }

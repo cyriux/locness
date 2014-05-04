@@ -7,8 +7,6 @@ import static fr.arolla.locness.billplusv2.OptionCode.REPO;
 import java.util.Date;
 import java.util.EnumSet;
 
-import fr.arolla.locness.billplus.UserContract;
-
 public class BillPlusMain {
 
 	public static void main(String[] args) {
@@ -18,6 +16,7 @@ public class BillPlusMain {
 		contracts
 				.addUserContract(789L, new Contract("Rihanna", null, ContractCode.LEV1, EnumSet.of(MULT, REPO, CCARD)));
 		contracts.addUserContract(1123L, new Contract("Britney", null, ContractCode.FLEXI_L, null));
+		contracts.addUserContract(1456L, new Contract("Lana", null, ContractCode.BIZ1, EnumSet.of(REPO)));
 
 		contracts.doBilling(new Date(), new BillingService(), new UserConsumption(26, 70));
 	}
