@@ -38,7 +38,7 @@ public class BillingManager {
 			String payAsYouGoLevel, int callTime) {
 		System.out.println("Starting billing for plan: " + plan + " texts counts: " + textCount + " call time: "
 				+ callTime);
-		Map<Date, Double> fees = null;
+		Map<Date, Double> fees = new HashMap<Date, Double>();
 		try {
 			if (payAsYouGoLevel != null) {
 				fees = payAsYouGo(registrationDate, payAsYouGoLevel, textCount, options, callTime);
@@ -47,9 +47,7 @@ public class BillingManager {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			fees = new HashMap<Date, Double>();
-		}
+		} 
 
 		try {
 			addMultiCallsOption(options, fees);

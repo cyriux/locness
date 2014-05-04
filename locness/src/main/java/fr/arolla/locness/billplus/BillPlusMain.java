@@ -12,25 +12,28 @@ public class BillPlusMain {
 		contract.setName("John Doe");
 		contract.setPlan("BASI");
 		contracts.addUserContract(123L, contract);
-		
+
 		UserContract contract2 = new UserContract();
 		contract2.setName("Paul Smith");
 		contract2.setPayAsYouGoLevel("LEV2");
 		contracts.addUserContract(456L, contract2);
+
+		UserContract contract3 = new UserContract();
+		contract3.setName("Rihanna");
+		contract3.setPayAsYouGoLevel("LEV1");
+		contract3.setOptions("REPO;MULT;CCARD");
+		contracts.addUserContract(789L, contract3);
 
 		billingService(contracts);
 	}
 
 	public static void billingService(PricePlans contracts) {
 		BillingManager manager = new BillingManager();
-		for (Iterator<Long> iterator = contracts.allUserIds().iterator(); iterator
-				.hasNext();) {
+		for (Iterator<Long> iterator = contracts.allUserIds().iterator(); iterator.hasNext();) {
 			Long userId = (Long) iterator.next();
 			UserContract userContract = contracts.findByUserid(userId);
-			Map<Date, Double> fees = manager.toBill(
-					userContract.getRegistrationDate(), userContract.getPlan(),
-					26, userContract.getOptions(),
-					userContract.getPayAsYouGoLevel(), 70);
+			Map<Date, Double> fees = manager.toBill(userContract.getRegistrationDate(), userContract.getPlan(), 26,
+					userContract.getOptions(), userContract.getPayAsYouGoLevel(), 70);
 			System.out.println(fees);
 		}
 	}
