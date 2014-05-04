@@ -36,17 +36,34 @@ public class BillingManager {
 
 	public Map<Date, Double> toBill(Date registrationDate, String plan, int textCount, String options,
 			String payAsYouGoLevel, int callTime) {
+		System.out.println("Starting billing for plan: " + plan + " texts counts: " + textCount + " call time: "
+				+ callTime);
 		Map<Date, Double> fees = null;
-		if (payAsYouGoLevel != null) {
-			fees = payAsYouGo(registrationDate, payAsYouGoLevel, textCount, options, callTime);
-		} else {
-			fees = monthlyFee(registrationDate, plan, textCount, options, callTime);
+		try {
+			if (payAsYouGoLevel != null) {
+				fees = payAsYouGo(registrationDate, payAsYouGoLevel, textCount, options, callTime);
+			} else {
+				fees = monthlyFee(registrationDate, plan, textCount, options, callTime);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			fees = new HashMap<Date, Double>();
 		}
 
-		addMultiCallsOption(options, fees);
+		try {
+			addMultiCallsOption(options, fees);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-		fees = addCreditCardCommission(fees, options);
+		try {
+			fees = addCreditCardCommission(fees, options);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
+		System.out.println("Done billing: " + fees);
 		return fees;
 	}
 
