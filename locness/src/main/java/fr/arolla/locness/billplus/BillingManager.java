@@ -34,31 +34,38 @@ public class BillingManager {
 
 	// boolean insurance
 
-	public Map<Date, Double> toBill(Date registrationDate, String plan,
-			int textCount, String options, String payAsYouGoLevel, int callTime) {
+	public Map<Date, Double> toBill(Date registrationDate, String plan, int textCount, String options,
+			String payAsYouGoLevel, int callTime) {
 		Map<Date, Double> fees = null;
 		if (payAsYouGoLevel != null) {
-			fees = payAsYouGo(registrationDate, payAsYouGoLevel, textCount,
-					options, callTime);
+			fees = payAsYouGo(registrationDate, payAsYouGoLevel, textCount, options, callTime);
 		} else {
-			fees = monthlyFee(registrationDate, plan, textCount, options,
-					callTime);
+			fees = monthlyFee(registrationDate, plan, textCount, options, callTime);
 		}
 
 		addMultiCallsOption(options, fees);
 
-		fees = addCreditCardCommission(fees);
+		fees = addCreditCardCommission(fees, options);
 
 		return fees;
 	}
 
-	private Map<Date, Double> addCreditCardCommission(Map<Date, Double> fees) {
-		if (fees.size() >= 1) {
+	private Map<Date, Double> addCreditCardCommission(Map<Date, Double> fees, String options) {
+		if (options == null || options.length() == 0) {
+			return fees;
+		}
+		boolean found = false;
+		String[] optionArray = options.split(";");
+		for (int i = 0; i < optionArray.length; i++) {
+			if ("CCARD".equalsIgnoreCase(optionArray[i])) {
+				found = true;
+			}
+		}
+		if (found && fees.size() >= 1) {
 			for (Date date : fees.keySet()) {
 				Double amount = fees.get(date);
 				final Properties prop = loadProperties();
-				double creditCardCommission = Double.parseDouble(prop
-						.getProperty("creditcardcommission"));
+				double creditCardCommission = Double.parseDouble(prop.getProperty("creditcardcommission"));
 				fees.put(date, amount + creditCardCommission);
 			}
 		} else {
@@ -67,21 +74,21 @@ public class BillingManager {
 		return fees;
 	}
 
-	private Map<Date, Double> payAsYouGo(Date registrationDate,
-			String payAsYouGoLevel, int textCount, String options, int callTime) {
+	private Map<Date, Double> payAsYouGo(Date registrationDate, String payAsYouGoLevel, int textCount, String options,
+			int callTime) {
 		final Properties prop = loadProperties();
 
 		double amount = 0;
 		double rate = 0;
+		double fee = 0;
 		if (PAYG_LEVEL1.equals(payAsYouGoLevel)) {
-			rate = Double.parseDouble(prop
-					.getProperty("paysasyougo.level1.rate"));
+			rate = Double.parseDouble(prop.getProperty("paysasyougo.level1.rate"));
 		}
 		if (PAYG_LEVEL2.equals(payAsYouGoLevel)) {
-			rate = Double.parseDouble(prop
-					.getProperty("paysasyougo.level2.rate"));
+			rate = Double.parseDouble(prop.getProperty("paysasyougo.level2.rate"));
+			fee = Double.parseDouble(prop.getProperty("paysasyougo.level2.fee"));
 		}
-		amount = callTime * rate + textCount * 0.10;
+		amount = fee + callTime * rate + textCount * 0.10;
 		Date paymentDate = getPaymentDate(registrationDate);
 
 		final Map<Date, Double> map = new HashMap<Date, Double>();
@@ -105,15 +112,13 @@ public class BillingManager {
 		final Properties prop = loadProperties();
 		for (int i = 0; i < optionArray.length; i++) {
 			if (MULTI_CALLS.equalsIgnoreCase(optionArray[i])) {
-				optionalFee = Double.parseDouble(prop
-						.getProperty("multicalls.fee"));
+				optionalFee = Double.parseDouble(prop.getProperty("multicalls.fee"));
 			}
 		}
 		// report option
 		for (int i = 0; i < optionArray.length; i++) {
 			if (REPORT.equalsIgnoreCase(optionArray[i])) {
-				optionalFee += Double.parseDouble(prop
-						.getProperty("report.fee"));
+				optionalFee += Double.parseDouble(prop.getProperty("report.fee"));
 			}
 		}
 
@@ -136,8 +141,7 @@ public class BillingManager {
 		}
 	}
 
-	public Map<Date, Double> monthlyFee(Date registrationDate, String plan,
-			int textCount, String options, int callTime) {
+	public Map<Date, Double> monthlyFee(Date registrationDate, String plan, int textCount, String options, int callTime) {
 		Date paymentDate = getPaymentDate(registrationDate);
 
 		Double monthlyFee = pricingPlan(plan);
@@ -147,8 +151,7 @@ public class BillingManager {
 
 		Double overtimeAmount = null;
 		if (PLAN_HOULAHOUP.equals(plan)) {
-			overtimeAmount = overtimeAmount(plan, callTime)
-					+ (textCount / 2 * 0.10);
+			overtimeAmount = overtimeAmount(plan, callTime) + (textCount / 2 * 0.10);
 		} else {
 			overtimeAmount = overtimeAmount(plan, callTime) + textCount * 0.10;
 		}
@@ -235,27 +238,22 @@ public class BillingManager {
 			return 0.;
 		}
 
-		final double overtimeRate = Double.parseDouble(prop
-				.getProperty("overtime.rate"));
+		final double overtimeRate = Double.parseDouble(prop.getProperty("overtime.rate"));
 		if (plan != null) {
 			if (PLAN_BASIC.equals(plan)) {
-				return overtimeAmount("plan.basic.time", callTime, prop,
-						overtimeRate);
+				return overtimeAmount("plan.basic.time", callTime, prop, overtimeRate);
 			}
 			if (PLAN_PREMIER.equals(plan)) {
-				return overtimeAmount("plan.premier.time", callTime, prop,
-						overtimeRate);
+				return overtimeAmount("plan.premier.time", callTime, prop, overtimeRate);
 			}
 			if (PLAN_VIP.equals(plan)) {
-				return overtimeAmount("plan.vip.time", callTime, prop,
-						overtimeRate);
+				return overtimeAmount("plan.vip.time", callTime, prop, overtimeRate);
 			}
 		}
 		return null;
 	}
 
-	public Double overtimeAmount(String planName, int callTime,
-			final Properties prop, final double overtimeRate) {
+	public Double overtimeAmount(String planName, int callTime, final Properties prop, final double overtimeRate) {
 		int overtime = callTime - Integer.parseInt(prop.getProperty(planName));
 		if (overtime < 0) {
 			return 0.;
