@@ -24,6 +24,11 @@ public class BillPlusMain {
 		contract3.setOptions("REPO;MULT;CCARD");
 		contracts.addUserContract(789L, contract3);
 
+		UserContract contract4 = new UserContract();
+		contract4.setName("Britney");
+		contract4.setPlan("FLXX");
+		contracts.addUserContract(1123L, contract4);
+
 		billingService(contracts);
 	}
 

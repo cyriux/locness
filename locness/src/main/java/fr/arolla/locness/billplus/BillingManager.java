@@ -19,6 +19,10 @@ public class BillingManager {
 	public final static String PLAN_VIP = "VIP";
 	// Pay as you go : null
 
+	public final static String FLEXI_S = "FLXS";
+	public final static String FLEXI_L = "FLXL";
+	public final static String FLEXI_XL = "FLXX";
+
 	// Pay as you go rates
 	public final static String PAYG_LEVEL1 = "LEV1";
 	public final static String PAYG_LEVEL2 = "LEV2";
@@ -40,14 +44,16 @@ public class BillingManager {
 				+ callTime);
 		Map<Date, Double> fees = new HashMap<Date, Double>();
 		try {
-			if (payAsYouGoLevel != null) {
+			if (plan != null && plan.startsWith("FLX")) {
+				fees = flexi(registrationDate, plan, textCount, options, payAsYouGoLevel, callTime);
+			} else if (payAsYouGoLevel != null) {
 				fees = payAsYouGo(registrationDate, payAsYouGoLevel, textCount, options, callTime);
 			} else {
 				fees = monthlyFee(registrationDate, plan, textCount, options, callTime);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
 
 		try {
 			addMultiCallsOption(options, fees);
@@ -63,6 +69,42 @@ public class BillingManager {
 
 		System.out.println("Done billing: " + fees);
 		return fees;
+	}
+
+	private Map<Date, Double> flexi(Date registrationDate, String plan, int textCount, String options,
+			String payAsYouGoLevel, int callTime) {
+		final Properties prop = loadProperties();
+
+		double amount = 0;
+		double rate = 0;
+		double fee = 0;
+		int builtInTime = 0; // mn
+		if (FLEXI_S.equals(plan)) {
+			rate = Double.parseDouble(prop.getProperty("flexi.small.rate"));
+			fee = Double.parseDouble(prop.getProperty("flexi.small.fee"));
+			builtInTime = 15;
+		}
+		if (FLEXI_L.equals(plan)) {
+			rate = Double.parseDouble(prop.getProperty("flexi.large.rate"));
+			fee = Double.parseDouble(prop.getProperty("flexi.large.fee"));
+			builtInTime = 30;
+		}
+		if (FLEXI_XL.equals(plan)) {
+			rate = Double.parseDouble(prop.getProperty("flexi.extra.rate"));
+			fee = Double.parseDouble(prop.getProperty("flexi.extra.fee"));
+			builtInTime = 45;
+		}
+		int extraTime = callTime - builtInTime;
+		if (extraTime < 0) {
+			extraTime = 0;
+		}
+		amount = fee + extraTime * rate + textCount * 0.10;
+		Date paymentDate = getPaymentDate(registrationDate);
+
+		final Map<Date, Double> map = new HashMap<Date, Double>();
+		double total = Math.round((amount) * 100.) / 100.;
+		map.put(paymentDate, total);
+		return map;
 	}
 
 	private Map<Date, Double> addCreditCardCommission(Map<Date, Double> fees, String options) {

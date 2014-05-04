@@ -2,7 +2,8 @@ package fr.arolla.locness.billplusv2;
 
 public enum ContractCode {
 
-	BASI("Basic"), PREMI(""), HOUH("HoulaHoup"), VIP("VIP"), LEV1("Level1"), LEV2("Level2");
+	BASI("Basic"), PREMI(""), HOUH("HoulaHoup"), VIP("VIP"), LEV1("Level1"), LEV2("Level2"), FLEXI_S("flexi.small"), FLEXI_L(
+			"flexi.large"), FLEXI_XL("flexi.extra");
 
 	private String name;
 
