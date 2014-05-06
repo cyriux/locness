@@ -6,8 +6,15 @@ import java.util.Map;
 
 public class BillPlusMain {
 
+	private static PricePlans contracts;
+	private static UserActivityStore calls;
+
+	public static UserActivityStore getUserActivityStore() {
+		return calls;
+	}
+
 	public static void main(String[] args) {
-		PricePlans contracts = new PricePlans();
+		contracts = new PricePlans();
 		UserContract contract = new UserContract();
 		contract.setName("John Doe");
 		contract.setPlan("BASI");
@@ -28,7 +35,7 @@ public class BillPlusMain {
 		contract4.setName("Britney");
 		contract4.setPlan("FLXX");
 		contracts.addUserContract(1123L, contract4);
-		
+
 		UserContract contract5 = new UserContract();
 		contract5.setName("Lana");
 		contract5.setPlan("BIZ1");
