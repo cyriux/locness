@@ -14,8 +14,13 @@ public enum PricingPlan {
 	},
 	HOULAHOUP(32.99, 240) {
 
-		public Payment texts(Date paymentDate, int textCount) {
-			return new Payment(paymentDate, currency, textRate * (textCount / 2));
+		public PaymentSequence allPayments(Date paymentDate, UserConsumption consumption) {
+			final Payment calls = callsPricing.fee(paymentDate, consumption.getCallTime());
+			final Payment texts = textPricing.fee(paymentDate, consumption.getTextCount() / 2);
+			final PaymentSequence paymentSequence = new PaymentSequence(calls, texts);
+
+			final PaymentSequence optionsFees = optionsFees(paymentDate, consumption.getOptions());
+			return paymentSequence.add(optionsFees);
 		}
 
 	},
@@ -25,13 +30,11 @@ public enum PricingPlan {
 	VIP(44.99, 240) {
 
 	};
-	//LEVEL1(), LEVEL2(), FLEXI_L(), BIZ1();
+	//,LEVEL1(), LEVEL2(), FLEXI_L(), BIZ1();
 
-	protected final Currency currency;
-	protected final double monthlyFee;
-	protected final int includedTime;
-	protected final double textRate;
-	protected final double overtimeRate;
+	protected final AffinePricing callsPricing;
+	protected final AffinePricing textPricing;
+
 	protected final EnumSet<Option> includedOptions;
 
 	private PricingPlan(double monthlyFee, int includedTime) {
@@ -40,35 +43,18 @@ public enum PricingPlan {
 
 	private PricingPlan(Currency currency, double monthlyFee, int includedTime, double textRate, double overtimeRate,
 			EnumSet<Option> includedOptions) {
-		this.currency = currency;
-		this.monthlyFee = monthlyFee;
-		this.includedTime = includedTime;
-		this.textRate = textRate;
-		this.overtimeRate = overtimeRate;
+		this.callsPricing = new AffinePricing(currency, includedTime, overtimeRate, monthlyFee);
+		this.textPricing = new AffinePricing(currency, 0, textRate, 0);
 		this.includedOptions = includedOptions == null ? EnumSet.noneOf(Option.class) : includedOptions;
 	}
 
 	public PaymentSequence allPayments(Date paymentDate, UserConsumption consumption) {
-		final Payment fee = fee(paymentDate);
-		final Payment calls = calls(paymentDate, consumption.getCallTime());
-		final Payment texts = texts(paymentDate, consumption.getTextCount());
-		final PaymentSequence paymentSequence = new PaymentSequence(fee, calls, texts);
+		final Payment calls = callsPricing.fee(paymentDate, consumption.getCallTime());
+		final Payment texts = textPricing.fee(paymentDate, consumption.getTextCount());
+		final PaymentSequence paymentSequence = new PaymentSequence(calls, texts);
 
 		final PaymentSequence optionsFees = optionsFees(paymentDate, consumption.getOptions());
 		return paymentSequence.add(optionsFees);
-	}
-
-	public Payment texts(Date paymentDate, int textCount) {
-		return new Payment(paymentDate, currency, textRate * textCount);
-	}
-
-	public Payment calls(Date paymentDate, int callTime) {
-		final int overtime = Math.max(0, callTime - includedTime);
-		return new Payment(paymentDate, currency, overtimeRate * overtime);
-	}
-
-	public Payment fee(Date paymentDate) {
-		return new Payment(paymentDate, currency, monthlyFee);
 	}
 
 	public PaymentSequence optionsFees(Date paymentDate, Set<Option> options) {
@@ -79,4 +65,9 @@ public enum PricingPlan {
 		return new PaymentSequence(payments);
 	}
 
+	public String pricingReport() {
+		return name() + "\tcalls: " + callsPricing.pricingReport() + "\ttexts: " + textPricing.pricingReport();
+	}
+
 }
+

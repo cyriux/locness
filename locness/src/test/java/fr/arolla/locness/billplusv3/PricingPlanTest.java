@@ -22,68 +22,11 @@ public class PricingPlanTest {
 	}
 
 	@Test
-	public void basic_plan_has_monthly_fee_on_payment_date() {
-		assertEquals(eurPaymentOnPaymentDate(12.99), BASIC.fee(paymentDate));
-	}
-
-	@Test
-	public void basic_plan_has_calls_time_included() {
-		assertEquals(eurPaymentOnPaymentDate(0), BASIC.calls(paymentDate, 50));
-	}
-
-	@Test
-	public void basic_plan_has_overtime_rate() {
-		assertEquals(eurPaymentOnPaymentDate(0.35), BASIC.calls(paymentDate, 61));
-	}
-
-	@Test
-	public void basic_plan_has_texts_rate() {
-		assertEquals(eurPaymentOnPaymentDate(2.60), BASIC.texts(paymentDate, 26));
-	}
-
-	@Test
-	public void premier_plan_has_monthly_fee_on_payment_date() {
-		assertEquals(eurPaymentOnPaymentDate(24.99), PREMIER.fee(paymentDate));
-	}
-
-	@Test
-	public void premier_plan_has_lot_of_included_time() {
-		assertEquals(eurPaymentOnPaymentDate(0), PREMIER.calls(paymentDate, 120));
-	}
-
-	@Test
-	public void premier_plan_has_texts_rate() {
-		assertEquals(eurPaymentOnPaymentDate(2.60), PREMIER.texts(paymentDate, 26));
-	}
-
-	@Test
-	public void vip_plan_has_monthly_fee_on_payment_date() {
-		assertEquals(eurPaymentOnPaymentDate(44.99), VIP.fee(paymentDate));
-	}
-
-	@Test
-	public void vip_plan_has_included_time() {
-		assertEquals(eurPaymentOnPaymentDate(0), VIP.calls(paymentDate, 240));
-	}
-
-	@Test
-	public void vip_plan_has_texts_rate() {
-		assertEquals(eurPaymentOnPaymentDate(2.60), VIP.texts(paymentDate, 26));
-	}
-
-	@Test
-	public void houlahoup_plan_has_monthly_fee_on_payment_date() {
-		assertEquals(eurPaymentOnPaymentDate(32.99), HOULAHOUP.fee(paymentDate));
-	}
-
-	@Test
-	public void houlahoup_plan_has_included_time() {
-		assertEquals(eurPaymentOnPaymentDate(0), HOULAHOUP.calls(paymentDate, 240));
-	}
-
-	@Test
-	public void houlahoup_plan_has_one_text_free_for_each_text() {
-		assertEquals(eurPaymentOnPaymentDate(1.30), HOULAHOUP.texts(paymentDate, 27));
+	public void pricing_by_contract() {
+		assertEquals("VIP	calls: EUR 44.99	240	0.35	texts: EUR 0.0	0	0.1", VIP.pricingReport());
+		assertEquals("PREMIER	calls: EUR 24.99	120	0.35	texts: EUR 0.0	0	0.1", PREMIER.pricingReport());
+		assertEquals("BASIC	calls: EUR 12.99	60	0.35	texts: EUR 0.0	0	0.1", BASIC.pricingReport());
+		assertEquals("HOULAHOUP	calls: EUR 32.99	240	0.35	texts: EUR 0.0	0	0.1", HOULAHOUP.pricingReport());
 	}
 
 	@Test
