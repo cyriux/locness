@@ -25,6 +25,7 @@ public enum PricingPlan {
 	VIP(44.99, 240) {
 
 	};
+	//LEVEL1(), LEVEL2(), FLEXI_L(), BIZ1();
 
 	protected final Currency currency;
 	protected final double monthlyFee;
