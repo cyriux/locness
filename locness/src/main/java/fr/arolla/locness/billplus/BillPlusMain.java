@@ -39,7 +39,7 @@ public class BillPlusMain {
 		UserContract contract5 = new UserContract();
 		contract5.setName("Lana");
 		contract5.setPlan("BIZ1");
-		contracts.addUserContract(1123L, contract5);
+		contracts.addUserContract(1456L, contract5);
 
 		billingService(contracts, "FR");
 	}
