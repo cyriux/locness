@@ -16,7 +16,7 @@ public class PaymentSequence implements Iterable<Payment> {
 		this(Arrays.asList(payments));
 	}
 
-	private PaymentSequence(List<Payment> payments) {
+	public PaymentSequence(List<Payment> payments) {
 		this.payments = payments;
 		Collections.sort(payments);
 	}
