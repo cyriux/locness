@@ -2,6 +2,7 @@ package fr.arolla.locness.billplusv3;
 
 import java.util.Currency;
 import java.util.Date;
+import java.util.Iterator;
 
 public final class Payment implements Comparable<Payment> {
 
@@ -22,6 +23,10 @@ public final class Payment implements Comparable<Payment> {
 		}
 	}
 
+	public Payment zero() {
+		return new Payment(date, currency, 0);
+	}
+
 	public Date getDate() {
 		return date;
 	}
@@ -39,6 +44,18 @@ public final class Payment implements Comparable<Payment> {
 			return new Payment(date, currency, amount + other.amount);
 		}
 		throw new IllegalArgumentException("Cannot add payments on different date or currency");
+	}
+
+	public static Payment sum(Iterable<Payment> payments) {
+		final Iterator<Payment> it = payments.iterator();
+		if (!it.hasNext()) {
+			throw new IllegalArgumentException("there must be at least one payment");
+		}
+		Payment total = it.next().zero();
+		for (Payment other : payments) {
+			total = total.add(other);
+		}
+		return total;
 	}
 
 	@Override
@@ -67,4 +84,5 @@ public final class Payment implements Comparable<Payment> {
 	public String toString() {
 		return "Payment at " + date + " " + currency + " " + amount;
 	}
+
 }

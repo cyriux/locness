@@ -1,5 +1,7 @@
 package fr.arolla.locness.billplusv3;
 
+import static fr.arolla.locness.billplusv3.Payment.sum;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,8 +37,32 @@ public class PaymentSequence implements Iterable<Payment> {
 		return new PaymentSequence(merged);
 	}
 
+	public PaymentSequence netted() {
+		return new PaymentSequence(sum(this));
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * payments.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof PaymentSequence)) {
+			return false;
+		}
+		return payments.equals(((PaymentSequence) obj).payments);
+	}
+
 	@Override
 	public String toString() {
 		return "PaymentSequence:" + payments;
 	}
+
 }

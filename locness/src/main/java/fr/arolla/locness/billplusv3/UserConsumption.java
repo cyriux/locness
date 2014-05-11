@@ -15,6 +15,10 @@ public class UserConsumption {
 		this.options = options == null ? EnumSet.noneOf(Option.class) : options;
 	}
 
+	public UserConsumption withOptions(Set<Option> options) {
+		return new UserConsumption(this.textCount, this.callTime, options);
+	}
+
 	public int getTextCount() {
 		return textCount;
 	}
@@ -23,8 +27,8 @@ public class UserConsumption {
 		return callTime;
 	}
 
-	public Set<Option> getOptions() {
-		return options;
+	public boolean hasOptions(Option option) {
+		return options.contains(option);
 	}
 
 }
